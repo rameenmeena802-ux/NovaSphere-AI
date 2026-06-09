@@ -1,0 +1,176 @@
+@import "tailwindcss";
+
+:root {
+  --background: #030014;
+  --foreground: #f3f4f6;
+  
+  --cyber-cyan: #00f2fe;
+  --cyber-purple: #8a2be2;
+  --cyber-pink: #ec4899;
+  --cyber-dark-bg: #030014;
+  --cyber-card-bg: rgba(10, 6, 30, 0.5);
+  
+  --font-sans: var(--font-geist-sans), Inter, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+}
+
+@theme {
+  --color-cyber-cyan: var(--cyber-cyan);
+  --color-cyber-purple: var(--cyber-purple);
+  --color-cyber-pink: var(--cyber-pink);
+  --color-cyber-dark: var(--cyber-dark-bg);
+  --color-cyber-gray: var(--cyber-card-bg);
+  
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-slow: pulse-slow 4s ease-in-out infinite;
+  --animate-neon-glow: neon-glow 2s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+  }
+  @keyframes neon-glow {
+    0%, 100% {
+      text-shadow: 0 0 4px rgba(0, 242, 254, 0.4), 0 0 12px rgba(138, 43, 226, 0.2);
+    }
+    50% {
+      text-shadow: 0 0 10px rgba(0, 242, 254, 0.8), 0 0 20px rgba(138, 43, 226, 0.4);
+    }
+  }
+}
+
+/* Custom base adjustments */
+html {
+  scroll-behavior: smooth;
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+/* Core premium styling utilities */
+.glassmorphism {
+  background: rgba(8, 4, 28, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glassmorphism-light {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.holographic-text {
+  background: linear-gradient(135deg, var(--cyber-cyan) 0%, #4facfe 40%, var(--cyber-purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.neon-border-cyan {
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.15), inset 0 0 10px rgba(0, 242, 254, 0.05);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+}
+
+.neon-border-purple {
+  box-shadow: 0 0 10px rgba(138, 43, 226, 0.15), inset 0 0 10px rgba(138, 43, 226, 0.05);
+  border: 1px solid rgba(138, 43, 226, 0.3);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
+}
+
+.text-glow-purple {
+  text-shadow: 0 0 8px rgba(138, 43, 226, 0.6);
+}
+
+/* Custom animated cyber button */
+.cyber-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 1px solid rgba(0, 242, 254, 0.5);
+  background: rgba(0, 242, 254, 0.05);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.cyber-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 242, 254, 0.25), transparent);
+  transition: all 0.5s ease;
+}
+
+.cyber-btn:hover::before {
+  left: 100%;
+}
+
+.cyber-btn:hover {
+  background: rgba(0, 242, 254, 0.15);
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+  transform: translateY(-2px);
+  border-color: var(--cyber-cyan);
+}
+
+/* Custom premium scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #030014;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(138, 43, 226, 0.3);
+  border-radius: 4px;
+  border: 2px solid #030014;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cyber-cyan);
+}
+
+/* Ambient grids and lighting */
+.ambient-bg-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: -20;
+}
+
+.glow-cyan {
+  background: rgba(0, 242, 254, 0.1);
+  top: 10%;
+  left: -10%;
+}
+
+.glow-purple {
+  background: rgba(138, 43, 226, 0.1);
+  bottom: 20%;
+  right: -10%;
+}
