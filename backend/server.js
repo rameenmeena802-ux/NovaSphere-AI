@@ -1,93 +1,134 @@
-require('dotenv').config();
-const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const cors = require('cors');
-const helmet = require('helmet');
-const path = require('path');
-const connectDB = require('./config/db');
+import express from 'express';
+import http from 'http';
+import { Server as SocketIO } from 'socket.io';
+import cors from 'cors';
+import helmet from 'helmet';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+import connectDB from './config/db.js';
+import mockStore from './config/mockDb.js';
 
-// Import routers
-const authRoutes = require('./routes/authRoutes');
-const projectRoutes = require('./routes/projectRoutes');
-const blogRoutes = require('./routes/blogRoutes');
-const contactRoutes = require('./routes/contactRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const uploadRoutes = require('./routes/uploadRoutes');
+dotenv.config();
 
-// Initialize app
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ===== MONGODB CONNECTION =====
+const isDbConnected = await connectDB();
+
+// ===== MOCK DATA =====
+const posts = mockStore.blogs.map((blog, index) => ({
+  id: index + 1,
+  title: blog.title,
+  content: blog.content.substring(0, 200) + '...',
+  author: blog.author,
+  coverImage: blog.coverImage,
+  tags: blog.tags,
+  readTime: blog.readTime,
+  createdAt: blog.createdAt
+}));
+
+// ===== APP SETUP =====
 const app = express();
 const server = http.createServer(app);
 
-// Connect database
-connectDB();
-
-// Initialize Socket.io
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
-const io = socketIo(server, {
+// ===== SOCKET.IO =====
+const io = new SocketIO(server, {
   cors: {
-    origin: '*', // For development flexibility
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
   }
 });
 
-// Expose Socket.io globally
 global.io = io;
 
-// Middleware
+// ===== MIDDLEWARE =====
 app.use(helmet({
-  crossOriginResourcePolicy: false, // Allows image access
+  crossOriginResourcePolicy: false,
 }));
+
 app.use(cors({
-  origin: '*', // Allow all for smooth local demo setup
+  origin: '*',
   credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve local uploads folder statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/blogs', blogRoutes);
-app.use('/api/contacts', contactRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/upload', uploadRoutes);
+// ===== ROUTES =====
 
-// Base route
-app.use('/api/health', (req, res) => {
+// GET all posts
+app.get('/api/posts', (req, res) => {
+  res.json(posts);
+});
+
+// GET single post
+app.get('/api/posts/:id', (req, res) => {
+  const post = posts.find(p => p.id == req.params.id);
+  if (!post) {
+    return res.status(404).json({ message: "Post not found" });
+  }
+  res.json(post);
+});
+
+// GET all projects
+app.get('/api/projects', (req, res) => {
+  res.json(mockStore.projects);
+});
+
+// GET all blogs
+app.get('/api/blogs', (req, res) => {
+  res.json(mockStore.blogs);
+});
+
+// GET all users (mock)
+app.get('/api/users', (req, res) => {
+  const safeUsers = mockStore.users.map(({ _id, name, email, role, avatar, createdAt }) => ({
+    _id, name, email, role, avatar, createdAt
+  }));
+  res.json(safeUsers);
+});
+
+// Health check
+app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
     timestamp: new Date(),
-    database: global.dbConnected ? 'connected' : 'mockup-mode'
+    database: isDbConnected ? 'connected' : 'mockup-mode',
+    posts: posts.length,
+    projects: mockStore.projects.length,
+    users: mockStore.users.length
   });
 });
 
-// Fallback route handler
+// 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({ success: false, message: 'Novasphere Endpoint Not Found' });
 });
 
-// Global error handler middleware
+// Error handler
 app.use((err, req, res, next) => {
   console.error('🔥 Server Error:', err.message);
-  res.status(500).json({ success: false, message: 'Critical Core Matrix Error: ' + err.message });
+  res.status(500).json({ success: false, message: err.message });
 });
 
-// Socket.io Connection Matrix
+// ===== SOCKET CONNECTION =====
 io.on('connection', (socket) => {
-  console.log(`🔌 Client synced to Matrix Node: ${socket.id}`);
+  console.log(`🔌 Client connected: ${socket.id}`);
 
   socket.on('disconnect', () => {
-    console.log(`🔌 Client desynced: ${socket.id}`);
+    console.log(`🔌 Client disconnected: ${socket.id}`);
   });
 });
 
-const PORT = process.env.PORT || 5000;
+// ===== START SERVER =====
+const PORT = process.env.PORT || 5002;
+
 server.listen(PORT, () => {
-  console.log(`🚀 Novasphere AI Universe Core running on port ${PORT}`);
-  console.log(`⚡ Mode: ${global.dbConnected ? 'Production DB Connected' : 'Simulated Sandbox Mode'}`);
+  console.log(`🚀 NovaSphere running on port ${PORT}`);
+  console.log(`📊 Mock data loaded: ${posts.length} posts, ${mockStore.projects.length} projects`);
 });

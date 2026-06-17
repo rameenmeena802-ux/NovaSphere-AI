@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 
 const salt = bcrypt.genSaltSync(10);
 const hashedAdminPassword = bcrypt.hashSync('adminpassword', salt);
@@ -100,4 +100,4 @@ const mockStore = {
   ]
 };
 
-module.exports = mockStore;
+export default mockStore;
