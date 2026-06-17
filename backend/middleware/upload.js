@@ -1,8 +1,12 @@
-const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const cloudinary = require('cloudinary').v2;
-const fs = require('fs');
-const path = require('path');
+import multer from 'multer';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let storage;
 
@@ -29,16 +33,32 @@ if (isCloudinaryConfigured) {
     },
   });
 
-  console.log('☁️  Cloudinary File Storage Initialized.');
+  console.log('☁️ Cloudinary File Storage Initialized.');
 } else {
-  // Fallback to local storage
+  // ===== FALLBACK: Local Storage (Vercel Compatible) =====
   const uploadDir = path.join(__dirname, '../uploads');
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+  
+  // Check if directory exists, if not create it
+  try {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+      console.log(`📁 Uploads directory created: ${uploadDir}`);
+    }
+  } catch (err) {
+    console.warn(`⚠️ Could not create uploads directory: ${err.message}`);
+    console.warn('📁 Running without file upload support.');
   }
 
   storage = multer.diskStorage({
     destination: function (req, file, cb) {
+      // Check if directory exists, if not create it (safety check)
+      if (!fs.existsSync(uploadDir)) {
+        try {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        } catch (err) {
+          return cb(new Error('Upload directory not available'), null);
+        }
+      }
       cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
@@ -47,9 +67,10 @@ if (isCloudinaryConfigured) {
     },
   });
 
-  console.warn('📁 Cloudinary credentials missing. Falling back to local disk storage in /backend/uploads.');
+  console.warn('📁 Cloudinary credentials missing. Falling back to local disk storage.');
 }
 
+// File filter - only images
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
@@ -66,4 +87,4 @@ const upload = multer({
   },
 });
 
-module.exports = { upload, isCloudinaryConfigured };
+export { upload, isCloudinaryConfigured };
