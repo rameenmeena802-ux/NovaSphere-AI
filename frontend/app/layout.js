@@ -1,45 +1,36 @@
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "../context/AuthContext";
-import { SocketProvider } from "../context/SocketContext";
-import Navbar from "../components/ui/Navbar";
-import Footer from "../components/ui/Footer";
-import Toast from "../components/ui/Toast";
+'use client';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import { useAuth } from '../../context/AuthContext';
+import { useRouter } from 'next/navigation';
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export default function AdminLayout({ children }) {
+  const { logout, user } = useAuth();
+  const router = useRouter();
 
-export const metadata = {
-  title: "Novasphere AI Universe - 3D Multi-Agent Network",
-  description: "An immersive, next-generation 3D platform for distributed cognitive agents, sub-atomic visual simulations, and decentralized neural networks.",
-  keywords: ["Artificial Intelligence", "3D Web", "Multi-Agent System", "Neural Networks", "Quantum Simulation", "Next.js"],
-};
+  const handleLogout = () => {
+    logout(); // AuthContext se logout
+    router.push('/'); // Home page par redirect
+  };
 
-export default function RootLayout({ children }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-[#030014] text-white selection:bg-cyber-cyan/35 selection:text-white">
-        <AuthProvider>
-          <SocketProvider>
-            <Navbar />
-            <main className="flex-grow pt-20 flex flex-col">
-              {children}
-            </main>
-            <Footer />
-            <Toast />
-          </SocketProvider>
-        </AuthProvider>
-      </body>
-    </html>
+    <div className="min-h-screen bg-[#060606] text-white">
+      {/* Header with Logout */}
+      <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b border-[#333] bg-[#060606]/95 backdrop-blur-sm">
+        <div>
+          <h1 className="text-xl font-light">NovaSphere AI</h1>
+          <p className="text-xs text-[#666]">Admin Panel</p>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-400">{user?.name || 'Admin'}</span>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 text-sm text-red-400 border border-red-400/30 rounded hover:bg-red-500/10 transition-all"
+          >
+            ⏻ Logout
+          </button>
+        </div>
+      </header>
+      <main className="p-6">{children}</main>
+    </div>
   );
 }
